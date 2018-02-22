@@ -19,7 +19,7 @@ func main(){
 
     //create neural net
     nnConfig := gonet.NeuralNetConfig{
-        InputNeurons: 5,
+        InputNeurons: 4,
         OutputNeurons: 8,
         HiddenNeurons: 10,
         NumEpochs: 1,
@@ -30,7 +30,7 @@ func main(){
 
     agent.LoadNN()
 
-    stateArr := []float64{0.0, 0.0, 0.0, 0.0, 0.0}
+    stateArr := []float64{0.01, 0.01, 0.01, 0.01}
     env.GetState(stateArr)
 
     reward := 0.0
@@ -49,7 +49,7 @@ func main(){
         endstate := false
         step := 0
 
-        for step < 1000 && endstate != true{
+        for step < 2000 && endstate != true{
             //action
             state.SetRow(0, stateArr)
 
@@ -60,7 +60,9 @@ func main(){
             //observation
             env.GetState(stateArr)
 
-            mapPositionVec(stateArr)
+            mapPositionVec(stateArr[0:3])
+
+            stateArr[3] = stateArr[3] * 0.01
 
             //reward
             reward, endstate = getReward(stateArr, epoch, step)
@@ -94,7 +96,7 @@ func getReward(stateArr []float64, epoch int, step int) (float64, bool) {
     }
 
     //fell off the level
-    if stateArr[1] < 0.2699 {
+    if stateArr[1] < 0.27 {
         reward = -10.0
         fmt.Println("Fell")
         endstate = true
@@ -107,8 +109,7 @@ func getReward(stateArr []float64, epoch int, step int) (float64, bool) {
         reward = -0.5
     }
 
-    reward += stateArr[2] / (float64(step+1) + 10)
-    reward = reward - 0.1
+    reward += stateArr[2] * 0.5
 
     return reward, endstate
 
