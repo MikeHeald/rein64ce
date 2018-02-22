@@ -115,7 +115,6 @@ func getReward(stateArr []float64, epoch int, step int) (float64, bool) {
 
 }
 
-
 func mapPositionVec(fArr []float64){
     for i, v := range fArr{
         fArr[i] = mapPositionVal(v)
