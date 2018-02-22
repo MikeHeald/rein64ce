@@ -12,7 +12,6 @@ import (
 //has to be mupen64plus 64 bit linux, with default input plugin
 func main(){
     args := os.Args[1:]
-    //cmdStrSlice := []string{"/usr/games/mupen64plus", "--nospeedlimit", "/home/m/sm64.n64"}
     mapPath := "./statemap.json"
     env := NewEnvironment(args, mapPath)
 
@@ -37,7 +36,6 @@ func main(){
     reward := 0.0
     epoch := 0
     action := uint64(0x00)
-    // get initial game state
     mapPositionVec(stateArr[0:3])
 
     stateP := mat.NewDense(1, len(stateArr), nil)
