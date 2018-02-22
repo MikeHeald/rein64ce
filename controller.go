@@ -14,7 +14,7 @@ import (
     "encoding/hex"
     "encoding/json"
     "encoding/binary"
-    
+
     "github.com/micmonay/keybd_event"
 )
 
@@ -93,7 +93,7 @@ func (cont *Controller) Init(){
     }
 
     cont.KeyBond = kb
-    
+
     time.Sleep(2 * time.Second)
 
     cont.KeyBond.SetKeys(keybd_event.VK_1, keybd_event.VK_F7)

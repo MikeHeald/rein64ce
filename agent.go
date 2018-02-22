@@ -46,7 +46,7 @@ func (agent *Agent) LoadNN() {
     wOut, er3 := ioutil.ReadFile("wOut.nn")
     bOut, er4 := ioutil.ReadFile("bOut.nn")
     if er1 != nil || er2 != nil || er3 != nil || er4 != nil{
-    	panic("error reading nn files")
+	    panic("error reading nn files")
     }
 
     mNN := [][]byte{wHid, bHid, wOut, bOut}
@@ -76,11 +76,11 @@ func (agent *Agent) GetAction(state *mat.Dense) uint64{
 //Bellman
 func (agent *Agent) GiveReward(state *mat.Dense, statePrime *mat.Dense, reward float64){
 	agent.nn.Feedforward(statePrime)
-    
+
     copy(agent.Q,agent.nn.Output.RawRowView(0))
     agent.maxQInd, agent.maxQ = getMaxFloat(agent.Q)
     agent.Q[agent.maxQInd] = reward + (1-agent.lRate) * agent.maxQ
-    
+
     agent.nn.Feedforward(state)
     agent.nnOut.SetRow(0, agent.Q)
     _ = agent.nn.Backpropagate(state, agent.nnOut)

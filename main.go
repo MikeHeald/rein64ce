@@ -6,7 +6,7 @@ import (
 
     "gonum.org/v1/gonum/mat"
 
-    "github.com/SageFocusLLC/gophernet" 
+    "github.com/SageFocusLLC/gophernet"
 )
 
 //has to be mupen64plus 64 bit linux, with default input plugin
@@ -48,7 +48,7 @@ func main(){
 
         endstate := false
         step := 0
-      
+
         for step < 1000 && endstate != true{
             //action
             state.SetRow(0, stateArr)
@@ -64,11 +64,11 @@ func main(){
 
             //reward
             reward, endstate = getReward(stateArr, epoch, step)
-            
+
             stateP.SetRow(0, stateArr)
 
             agent.GiveReward(state,stateP,reward)
-            
+
             step += 1
         }
         agent.SaveNN()
@@ -106,7 +106,7 @@ func getReward(stateArr []float64, epoch int, step int) (float64, bool) {
     } else {
         reward = -0.5
     }
-  
+
     reward += stateArr[2] / (float64(step+1) + 10)
     reward = reward - 0.1
 
