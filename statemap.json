@@ -1,0 +1,20 @@
+[{
+	"name": "mario_x",
+    "address": "0x0b6f2aac",
+	"type": "float32"
+},
+{
+	"name": "mario_y",
+    "address": "0x0b6f2ab0",
+    "type": "float32"
+},
+{
+	"name": "mario_z",
+    "address": "0x0b6f2ab4",
+    "type": "float32"
+},
+{
+	"name": "mario_coins",
+    "address": "0x0b6f2b1a",
+    "type": "uint16"
+}]
