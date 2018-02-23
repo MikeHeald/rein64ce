@@ -1,6 +1,6 @@
 package main
 
-//Environment - the intention is to wrap the Controller class 
+//Environment - the intention is to wrap the Controller class
 //              should someone want to implement a controller for another emulator
 type Environment struct {
 	emuCtrlr *Controller
