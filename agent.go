@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 )
 
+//Agent - has some way of predicting Q
 type Agent struct {
 	ActionSpace []uint64
 	nn          *gonet.NeuralNet
@@ -16,6 +17,7 @@ type Agent struct {
 	Q           []float64
 }
 
+//NewAgent - Agent constructor
 func NewAgent(nnConf gonet.NeuralNetConfig) *Agent {
 	aspace := []uint64{
 		0x0000,     //idle
@@ -40,6 +42,7 @@ func NewAgent(nnConf gonet.NeuralNetConfig) *Agent {
 	return agent
 }
 
+//LoadNN - Load the weights and biases from binary file
 func (agent *Agent) LoadNN() {
 	wHid, er1 := ioutil.ReadFile("wHid.nn")
 	bHid, er2 := ioutil.ReadFile("bHid.nn")
@@ -56,6 +59,7 @@ func (agent *Agent) LoadNN() {
 	agent.lRate = 0.0
 }
 
+//SaveNN - Save the current weights and biases to a binary file
 func (agent *Agent) SaveNN() {
 	binnn := agent.nn.MarshalNN()
 
@@ -65,6 +69,7 @@ func (agent *Agent) SaveNN() {
 	_ = ioutil.WriteFile("bOut.nn", binnn[3], 0755)
 }
 
+//GetAction - given the current state, predict Q and select an action
 func (agent *Agent) GetAction(state *mat.Dense) uint64 {
 	agent.nn.Feedforward(state)
 
@@ -73,7 +78,7 @@ func (agent *Agent) GetAction(state *mat.Dense) uint64 {
 	return agent.ActionSpace[maxQ1Ind]
 }
 
-//Bellman
+//GiveReward - Bellman Eqn
 func (agent *Agent) GiveReward(state *mat.Dense, statePrime *mat.Dense, reward float64) {
 	agent.nn.Feedforward(statePrime)
 

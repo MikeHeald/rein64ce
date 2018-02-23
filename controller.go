@@ -18,6 +18,7 @@ import (
 	"github.com/micmonay/keybd_event"
 )
 
+//Controller - launches and interacts with the emulator as a debugger
 type Controller struct {
 	cmd            *exec.Cmd
 	inPlugAddr     uint64
@@ -29,17 +30,20 @@ type Controller struct {
 	KeyBond        keybd_event.KeyBonding
 }
 
+//StateValue - contains the memory address and the data type of a state var
 type StateValue struct {
 	Addr string
 	Type string
 }
 
+//JsonMessage - used for unpacking state info from json file
 type JsonMessage struct {
 	Name string `json:"name"`
 	Addr string `json:"address"`
 	Type string `json:"type"`
 }
 
+//NewController - controller constructor
 func NewController(cmdArr []string, mapPath string) *Controller {
 	jsonfile, err := ioutil.ReadFile(mapPath)
 	if err != nil {
@@ -76,6 +80,7 @@ func NewController(cmdArr []string, mapPath string) *Controller {
 	return emuCtrlr
 }
 
+//Init - initialize the emulator and key bindings
 func (cont *Controller) Init() {
 	cont.cmd.Start()
 	time.Sleep(2 * time.Second)
@@ -103,12 +108,14 @@ func (cont *Controller) Init() {
 	}
 }
 
+//GetState - get the values in memory for all state vars
 func (cont *Controller) GetState(state []float64) {
 	for i, v := range cont.stateAddrSlice {
 		state[i] = cont.ReadStateVal(cont.cmd.Process.Pid, cont.StateAddrMap[v])
 	}
 }
 
+//ReadStateVal - read the memory for a given state var
 func (cont *Controller) ReadStateVal(pid int, v StateValue) float64 {
 	addrSlice, err := hex.DecodeString(v.Addr[2:])
 	addr := uint64(binary.BigEndian.Uint32(addrSlice)) + cont.inPlugAddr
@@ -123,6 +130,7 @@ func (cont *Controller) ReadStateVal(pid int, v StateValue) float64 {
 	return 0.0
 }
 
+//GameStep - Set the action and run the game for one frame
 func (cont *Controller) GameStep(action uint64) {
 	//run one frame
 	pCont(cont.cmd.Process.Pid)
@@ -149,6 +157,7 @@ func (cont *Controller) GameStep(action uint64) {
 	setBreakpoint(cont.cmd.Process.Pid, cont.bpAddr, cont.origByte)
 }
 
+//LoadGame - Load the save-state
 func (cont *Controller) LoadGame() {
 	err := cont.KeyBond.Launching()
 	if err != nil {
