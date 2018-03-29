@@ -29,6 +29,11 @@ func (env *Environment) GameStep(action uint64) {
 	env.emuCtrlr.GameStep(action)
 }
 
+//GameStepTrain - step the game a single input frame
+func (env *Environment) GameStepTrain() uint64{
+	return env.emuCtrlr.GameStepTrain()
+}
+
 //LoadGame - load saved state
 func (env *Environment) LoadGame() {
 	env.emuCtrlr.LoadGame()

@@ -157,6 +157,35 @@ func (cont *Controller) GameStep(action uint64) {
 	setBreakpoint(cont.cmd.Process.Pid, cont.bpAddr, cont.origByte)
 }
 
+//GameStep - Run the game one frame accepting user input
+func (cont *Controller) GameStepTrain() uint64 {
+	//run one frame
+	pCont(cont.cmd.Process.Pid)
+
+	//wait for breakpoint
+	sysWait(cont.cmd.Process.Pid)
+
+	//replace int3 instruction with mov
+	clearBreakpoint(cont.cmd.Process.Pid, cont.bpAddr, cont.origByte)
+
+	//get rax register for user input
+	action := pGetRax(cont.cmd.Process.Pid)
+
+	//reset pc
+	pSetPC(cont.cmd.Process.Pid, uint64(cont.bpAddr))
+
+	//single step
+	pStep(cont.cmd.Process.Pid)
+
+	//wait for step to finish
+	sysWait(cont.cmd.Process.Pid)
+
+	//replace interrupt
+	setBreakpoint(cont.cmd.Process.Pid, cont.bpAddr, cont.origByte)
+
+	return action
+}
+
 //LoadGame - Load the save-state
 func (cont *Controller) LoadGame() {
 	err := cont.KeyBond.Launching()
@@ -201,6 +230,15 @@ func pStep(pid int) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func pGetRax(pid int) uint64 {
+	var regs syscall.PtraceRegs
+	err := syscall.PtraceGetRegs(pid, &regs)
+	if err != nil {
+		panic(err)
+	}
+	return regs.Rax
 }
 
 func pSetRax(pid int, cInput uint64) {
