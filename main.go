@@ -30,7 +30,7 @@ func main() {
 
 	agent.LoadNN()
 
-	agent.SetTau(0.8)
+	agent.SetTau(0.05)
 
 	stateArr := []float64{0.01, 0.01, 0.01, 0.01, 0.01}
 	env.GetState(stateArr)
@@ -71,10 +71,13 @@ func main() {
 			state.SetRow(0, stateArr)
 
 			//e greedy exploration
-			action = agent.GetActionEGreedy(state)
+			//action = agent.GetActionEGreedy(state)
 
 			//boltzmann
 			//action = agent.GetActionBoltzmann(state)
+
+			//greedy
+			action = agent.GetActionGreedy(state)
 
 			//_ = env.GameStepTrain()
 			//actionP = env.GameStepTrain()
@@ -114,7 +117,10 @@ func main() {
 		}
 		//decrease temp
 		curTemp := agent.GetTau()
-		agent.SetTau(curTemp * 0.9)
+		if curTemp > 0.002 {
+			agent.SetTau(curTemp * 0.9)
+		}
+		
 		fmt.Println(agent.Q)
 		fmt.Println(curTemp)
 		agent.SaveNN()

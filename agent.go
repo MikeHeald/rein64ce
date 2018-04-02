@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"math"
+	"fmt"
 )
 
 //Agent - has some way of predicting Q
@@ -100,11 +101,23 @@ func getBoltzFloat(fArr []float64, tau float64) int {
 		pqArr[i] = v / pqSum
 	}
 
-	//select max?
+	//select action
+	probSum := 0.0
+	pVal := rand.Float64()
+	for i, v := range pqArr {
+		probSum += v
+		if pVal < probSum {
+			return i
+		}
+	}
 	maxBup, _ := getMaxFloat(pqArr)
+	fmt.Println(probSum)
+	fmt.Println(pVal)
+	fmt.Println(pqArr)
+	fmt.Println(fArr)
+	fmt.Println(tau)
+	panic("BoltzFail")
 	return maxBup
-
-
 }
 
 //GetActionBayesian
