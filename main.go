@@ -15,8 +15,6 @@ func main() {
 	mapPath := "./statemap.json"
 	env := NewEnvironment(args, mapPath)
 
-	e := 0.0002
-
 	env.Init()
 
 	//create neural net
@@ -31,6 +29,8 @@ func main() {
 	agent := NewAgent(nnConfig)
 
 	agent.LoadNN()
+
+	agent.SetTau(0.8)
 
 	stateArr := []float64{0.01, 0.01, 0.01, 0.01, 0.01}
 	env.GetState(stateArr)
@@ -71,9 +71,10 @@ func main() {
 			state.SetRow(0, stateArr)
 
 			//e greedy exploration
-			action = agent.GetActionEGreedy(state, e)
+			action = agent.GetActionEGreedy(state)
 
-
+			//boltzmann
+			//action = agent.GetActionBoltzmann(state)
 
 			//_ = env.GameStepTrain()
 			//actionP = env.GameStepTrain()
@@ -91,15 +92,12 @@ func main() {
 			//reward
 			reward, endstate = getReward(stateArr, epoch, step)
 
-			fmt.Println(reward)
-
 			stateP.SetRow(0, stateArr)
 
 			//scale reward
 			reward = reward * 0.05
 
 			agent.GiveReward(state, stateP, reward)
-
 			
 			//memory
 			gameMemArr[0] = stateArr[0]
@@ -111,11 +109,14 @@ func main() {
 			gameMemArr[6] = float64(action)
 
 			gameMem.SetRow(step, gameMemArr)
-			fmt.Println(agent.Q)
 
 			step += 1
 		}
+		//decrease temp
+		curTemp := agent.GetTau()
+		agent.SetTau(curTemp * 0.9)
 		fmt.Println(agent.Q)
+		fmt.Println(curTemp)
 		agent.SaveNN()
 
 		epoch += 1

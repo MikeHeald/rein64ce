@@ -5,6 +5,7 @@ import (
 	"gonum.org/v1/gonum/mat"
 	"io/ioutil"
 	"math/rand"
+	"math"
 )
 
 //Agent - has some way of predicting Q
@@ -16,6 +17,7 @@ type Agent struct {
 	maxQ        float64
 	maxQInd     int
 	Q           []float64
+	tau         float64
 }
 
 //NewAgent - Agent constructor
@@ -38,6 +40,7 @@ func NewAgent(nnConf gonet.NeuralNetConfig) *Agent {
 		Q:           make([]float64, len(aspace)),
 		maxQ:        0.0,
 		maxQInd:     0,
+		tau:         0.0,
 	}
 
 	return agent
@@ -70,11 +73,46 @@ func (agent *Agent) SaveNN() {
 	_ = ioutil.WriteFile("bOut.nn", binnn[3], 0755)
 }
 
-//GetActionEGreedy
-func (agent *Agent) GetActionEGreedy(state *mat.Dense, e float64) uint64 {
+//GetActionBoltzmann
+func (agent *Agent) GetActionBoltzmann(state *mat.Dense) uint64 {
+	agent.nn.Feedforward(state)
 
+	actInd := getBoltzFloat(agent.nn.Output.RawRowView(0), agent.tau)
+
+	return agent.ActionSpace[actInd]
+}
+
+func getBoltzFloat(fArr []float64, tau float64) int {
+	//calc boltzmann for each qval
+	var pqArr []float64
+	for _, v := range fArr {
+		pqArr = append(pqArr, math.Exp(v / tau))
+	}
+
+	//sum the weights
+	pqSum := 0.0
+	for _, v := range pqArr {
+		pqSum += v
+	}
+
+	//divide each boltz by sum
+	for i, v := range pqArr {
+		pqArr[i] = v / pqSum
+	}
+
+	//select max?
+	maxBup, _ := getMaxFloat(pqArr)
+	return maxBup
+
+
+}
+
+//GetActionBayesian
+
+//GetActionEGreedy - agent.tau is used as epsilon
+func (agent *Agent) GetActionEGreedy(state *mat.Dense) uint64 {
 	eVal := rand.Float64()
-	if eVal < e {
+	if eVal < agent.tau {
 		return agent.GetRandAction()
 	} else {
 		return agent.GetActionGreedy(state)
@@ -118,4 +156,12 @@ func getMaxFloat(fArr []float64) (int, float64) {
 		}
 	}
 	return curMaxInd, curMax
+}
+
+func (agent *Agent) GetTau() float64 {
+	return agent.tau
+}
+
+func (agent *Agent) SetTau(tau float64) {
+	agent.tau = tau
 }
