@@ -70,13 +70,24 @@ func (agent *Agent) SaveNN() {
 	_ = ioutil.WriteFile("bOut.nn", binnn[3], 0755)
 }
 
+//GetActionEGreedy
+func (agent *Agent) GetActionEGreedy(state *mat.Dense, e float64) uint64 {
+
+	eVal := rand.Float64()
+	if eVal < e {
+		return agent.GetRandAction()
+	} else {
+		return agent.GetActionGreedy(state)
+	}
+}
+
 //GetRandAction - select random action
 func (agent *Agent) GetRandAction() uint64 {
 	return agent.ActionSpace[rand.Intn(len(agent.ActionSpace))]
 }
 
-//GetAction - given the current state, predict Q and select an action
-func (agent *Agent) GetAction(state *mat.Dense) uint64 {
+//GetActionGreedy - given the current state, predict Q and select an action
+func (agent *Agent) GetActionGreedy(state *mat.Dense) uint64 {
 	agent.nn.Feedforward(state)
 
 	maxQ1Ind, _ := getMaxFloat(agent.nn.Output.RawRowView(0))

@@ -7,8 +7,6 @@ import (
 	"gonum.org/v1/gonum/mat"
 
 	"github.com/SageFocusLLC/gophernet"
-
-	"math/rand"
 )
 
 //has to be mupen64plus 64 bit linux, with default input plugin
@@ -73,13 +71,7 @@ func main() {
 			state.SetRow(0, stateArr)
 
 			//e greedy exploration
-			
-			eVal := rand.Float64()
-			if eVal < e {
-				action = agent.GetRandAction()
-			} else {
-				action = agent.GetAction(state)
-			}
+			action = agent.GetActionEGreedy(state, e)
 
 
 
