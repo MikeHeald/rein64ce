@@ -4,6 +4,7 @@ import (
 	"github.com/SageFocusLLC/gophernet"
 	"gonum.org/v1/gonum/mat"
 	"io/ioutil"
+	"math/rand"
 )
 
 //Agent - has some way of predicting Q
@@ -69,6 +70,11 @@ func (agent *Agent) SaveNN() {
 	_ = ioutil.WriteFile("bOut.nn", binnn[3], 0755)
 }
 
+//GetRandAction - select random action
+func (agent *Agent) GetRandAction() uint64 {
+	return agent.ActionSpace[rand.Intn(len(agent.ActionSpace))]
+}
+
 //GetAction - given the current state, predict Q and select an action
 func (agent *Agent) GetAction(state *mat.Dense) uint64 {
 	agent.nn.Feedforward(state)
@@ -84,7 +90,7 @@ func (agent *Agent) GiveReward(state *mat.Dense, statePrime *mat.Dense, reward f
 
 	copy(agent.Q, agent.nn.Output.RawRowView(0))
 	agent.maxQInd, agent.maxQ = getMaxFloat(agent.Q)
-	agent.Q[agent.maxQInd] = reward + (1-agent.lRate)*agent.maxQ
+	agent.Q[agent.maxQInd] = reward + (1.0-agent.lRate)*agent.maxQ
 
 	agent.nn.Feedforward(state)
 	agent.nnOut.SetRow(0, agent.Q)
