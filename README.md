@@ -7,7 +7,9 @@ Usage:
 sudo ./rein64ce /usr/games/mupen64plus /path/to/rom
 
 
-todo:
+
+TODO:
+
 feature - record states/actions
 
 feature - experience playback training
