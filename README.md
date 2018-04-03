@@ -9,6 +9,7 @@ sudo ./rein64ce /usr/games/mupen64plus /path/to/rom
 
 todo:
 feature - record states/actions
+
 feature - experience playback training
 feature - exploit/exploration options
 feature - move reward definitions to json
