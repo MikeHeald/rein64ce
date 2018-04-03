@@ -17,9 +17,12 @@ func main() {
 
 	env.Init()
 
+	episodeLength := 1200 
+	episodeProgress := 0.0
+
 	//create neural net
 	nnConfig := gonet.NeuralNetConfig{
-		InputNeurons:  5,
+		InputNeurons:  6,
 		OutputNeurons: 8,
 		HiddenNeurons: 10,
 		NumEpochs:     1,
@@ -28,11 +31,11 @@ func main() {
 
 	agent := NewAgent(nnConfig)
 
-	agent.LoadNN()
+	//agent.LoadNN()
 
-	agent.SetTau(0.05)
+	agent.SetTau(0.99)
 
-	stateArr := []float64{0.01, 0.01, 0.01, 0.01, 0.01}
+	stateArr := []float64{0.01, 0.01, 0.01, 0.01, 0.01, 0.01}
 	env.GetState(stateArr)
 
 	reward := 0.0
@@ -44,15 +47,6 @@ func main() {
 	stateP := mat.NewDense(1, len(stateArr), nil)
 	state := mat.NewDense(1, len(stateArr), nil)
 
-	gameMemArr := []float64{stateArr[0], stateArr[1], stateArr[2], stateArr[3], stateArr[4], reward, float64(action)}
-	gameMemArr[0] = stateArr[0]
-	gameMemArr[1] = stateArr[1]
-	gameMemArr[2] = stateArr[2]
-	gameMemArr[3] = stateArr[3]
-	gameMemArr[4] = stateArr[4]
-	gameMemArr[5] = reward
-	gameMemArr[6] = float64(action)
-	gameMem := mat.NewDense(2000, len(stateArr) + 2, nil)
 	//actionMem := mat.NewDense(1000, 1, nil)
 	//rewardMem := mat.NewDense(1000, 1, nil)
 
@@ -64,20 +58,22 @@ func main() {
 		env.LoadGame()
 
 		endstate := false
-		step := 0
+		step := 1
 
-		for step < 2000 && endstate != true {
+		for step < episodeLength && endstate != true {
+			episodeProgress = float64(step) / float64(episodeLength + 1)
+			fmt.Println(stateArr)
 			//action
 			state.SetRow(0, stateArr)
+
+			//greedy
+			//action = agent.GetActionGreedy(state)
 
 			//e greedy exploration
 			//action = agent.GetActionEGreedy(state)
 
 			//boltzmann
-			//action = agent.GetActionBoltzmann(state)
-
-			//greedy
-			action = agent.GetActionGreedy(state)
+			action = agent.GetActionBoltzmann(state)
 
 			//_ = env.GameStepTrain()
 			//actionP = env.GameStepTrain()
@@ -85,12 +81,13 @@ func main() {
 
 			//observation
 			env.GetState(stateArr)
-			
 
 			mapPositionVec(stateArr[0:3])
 
 			stateArr[3] = stateArr[3] / 65536.0
 			stateArr[4] = stateArr[4] * 0.01
+
+			stateArr[5] = episodeProgress
 
 			//reward
 			reward, endstate = getReward(stateArr, epoch, step)
@@ -102,17 +99,6 @@ func main() {
 
 			agent.GiveReward(state, stateP, reward)
 			
-			//memory
-			gameMemArr[0] = stateArr[0]
-			gameMemArr[1] = stateArr[1]
-			gameMemArr[2] = stateArr[2]
-			gameMemArr[3] = stateArr[3]
-			gameMemArr[4] = stateArr[4]
-			gameMemArr[5] = reward
-			gameMemArr[6] = float64(action)
-
-			gameMem.SetRow(step, gameMemArr)
-
 			step += 1
 		}
 		//decrease temp
