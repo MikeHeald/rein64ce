@@ -11,9 +11,15 @@ todo:
 feature - record states/actions
 
 feature - experience playback training
-feature - exploit/exploration options
+
+feature - exploit/exploration options -- done -- added epsilon-greedy and boltzmann
+
 feature - move reward definitions to json
+
 feature - python tensorflow nn
+
 bug - ptrace eventually hangs (deadlock?)
+
 feature - load saved states without simulating key presses
+
 feature - headless
