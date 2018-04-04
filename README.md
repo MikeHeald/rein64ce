@@ -10,7 +10,7 @@ sudo ./rein64ce /usr/games/mupen64plus /path/to/rom
 
 TODO:
 
-feature - marshall agent and NN to json for saving/sharing
+feature - marshal agent and NN to json for saving/sharing
 
 feature - record states/actions
 
