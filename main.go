@@ -24,16 +24,16 @@ func main() {
 	nnConfig := gonet.NeuralNetConfig{
 		InputNeurons:  6,
 		OutputNeurons: 8,
-		HiddenNeurons: 10,
+		HiddenNeurons: 12,
 		NumEpochs:     1,
-		LearningRate:  0.01,
+		LearningRate:  0.05,
 	}
 
 	agent := NewAgent(nnConfig)
 
-	//agent.LoadNN()
+	agent.LoadNN()
 
-	agent.SetTau(0.99)
+	agent.SetTau(0.3)
 
 	stateArr := []float64{0.01, 0.01, 0.01, 0.01, 0.01, 0.01}
 	env.GetState(stateArr)
@@ -50,8 +50,6 @@ func main() {
 	//actionMem := mat.NewDense(1000, 1, nil)
 	//rewardMem := mat.NewDense(1000, 1, nil)
 
-	
-
 	for epoch < 100 {
 		fmt.Println("Epoch ", epoch)
 
@@ -62,21 +60,22 @@ func main() {
 
 		for step < episodeLength && endstate != true {
 			episodeProgress = float64(step) / float64(episodeLength + 1)
-			fmt.Println(stateArr)
+
 			//action
 			state.SetRow(0, stateArr)
 
 			//greedy
-			//action = agent.GetActionGreedy(state)
+			action = agent.GetActionGreedy(state)
 
 			//e greedy exploration
 			//action = agent.GetActionEGreedy(state)
 
 			//boltzmann
-			action = agent.GetActionBoltzmann(state)
+			//action = agent.GetActionBoltzmann(state)
 
 			//_ = env.GameStepTrain()
 			//actionP = env.GameStepTrain()
+
 			env.GameStep(action)
 
 			//observation
@@ -95,7 +94,7 @@ func main() {
 			stateP.SetRow(0, stateArr)
 
 			//scale reward
-			reward = reward * 0.05
+			reward = reward * 0.1
 
 			agent.GiveReward(state, stateP, reward)
 			
@@ -153,7 +152,6 @@ func getReward(stateArr []float64, epoch int, step int) (float64, bool) {
 	//fell off the level
 	if stateArr[1] < 0.26 {
 		reward = -2.0
-		fmt.Println("Fellllllllllllllllllllllllllll")
 		endstate = true
 	}
 
@@ -167,7 +165,7 @@ func getReward(stateArr []float64, epoch int, step int) (float64, bool) {
 	//reward = reward * 0.3 - 0.2
 
 	//slight reward for moving down
-	reward += 0.01 * (1.0 - stateArr[1])
+	reward += 0.05 * (1.0 - stateArr[1])
 
 	return reward, endstate
 
