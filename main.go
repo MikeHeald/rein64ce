@@ -2,12 +2,9 @@ package main
 
 import (
 	"fmt"
-    "strconv"
+	"strconv"
 	"os"
-
-
-
-    "encoding/csv"
+	"encoding/csv"
 )
 
 //has to be mupen64plus 64 bit linux, with default input plugin
@@ -24,8 +21,6 @@ func main() {
 
 	agent := NewAgent()
 
-//	agent.LoadNN()
-
 	agent.SetTau(0.01)
 
 	stateArr := []float32{0.01, 0.01, 0.01, 0.01, 0.01, 0.01}
@@ -34,13 +29,6 @@ func main() {
 
 	epoch := 0
 	action := uint64(0x00)
-	//actionP := uint64(0x00)
-
-//	state := mat.NewDense(1, len(stateArr), nil)
-//	state := []float64
-
-	//actionMem := mat.NewDense(1000, 1, nil)
-	//rewardMem := mat.NewDense(1000, 1, nil)
 
 	for epoch < 100 {
 		fmt.Println("Epoch ", epoch)
@@ -53,10 +41,7 @@ func main() {
 	        epochMem := [][]float32{}
 
 		for step < episodeLength && endstate != true {
-			episodeProgress = float32(step) / float32(episodeLength + 1)
-
-			//action
-			//state.SetRow(0, stateArr)
+			episodeProgress = float32(step)
 
 			//greedy
 			//action = agent.GetActionGreedy(state)
@@ -66,9 +51,6 @@ func main() {
 
 			//boltzmann
 			//action = agent.GetActionBoltzmann(state)
-
-			//python
-			//action = getWebAction(stateArr)
 
 			//tf go
 			copy(stateArray[:], stateArr[:3])
@@ -106,21 +88,21 @@ func main() {
 
 		fmt.Println(agent.Q)
 		fmt.Println(curTemp)
-//		agent.SaveNN()
 
 		epoch += 1
-        fmt.Println(len(epochMem))
-        file, _ := os.Create("epochMeme.csv")
-        defer file.Close()
-        writer := csv.NewWriter(file)
-        defer writer.Flush()
-        for _, value := range epochMem {
-            strArr := []string{}
-            for _, fval := range value {
-                strArr = append(strArr, strconv.FormatFloat(float64(fval),'f', 6, 64))
-            }
-            _ = writer.Write(strArr)
-        }
+
+	        fmt.Println(len(epochMem))
+	        file, _ := os.Create("epochMeme.csv")
+	        defer file.Close()
+	        writer := csv.NewWriter(file)
+	        defer writer.Flush()
+	        for _, value := range epochMem {
+	            strArr := []string{}
+	            for _, fval := range value {
+	                strArr = append(strArr, strconv.FormatFloat(float64(fval),'f', 6, 64))
+	            }
+	            _ = writer.Write(strArr)
+	        }
 
 	}
 	fmt.Println("done :D")
