@@ -14,8 +14,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-
-	"github.com/micmonay/keybd_event"
 )
 
 //Controller - launches and interacts with the emulator as a debugger
@@ -28,7 +26,6 @@ type Controller struct {
 	stateAddrSlice []string
 	StateAddrMap   map[string]StateValue
 	origByte       []byte
-	KeyBond        keybd_event.KeyBonding
 }
 
 //StateValue - contains the memory address and the data type of a state var
@@ -62,11 +59,6 @@ func NewController(cmdArr []string, mapPath string) *Controller {
 		addrmap[v.Name] = StateValue{v.Addr, v.Type}
 	}
 
-	kb, err := keybd_event.NewKeyBonding()
-	if err != nil {
-		panic(err)
-	}
-
 	emuCtrlr := &Controller{
 		cmd:            exec.Command(cmdArr[0], cmdArr[1:]...),
 		inPlugAddr:     uint64(0x00),
@@ -75,14 +67,13 @@ func NewController(cmdArr []string, mapPath string) *Controller {
 		bpAddr:         uintptr(0x00),
 		stateAddrSlice: addrslice,
 		StateAddrMap:   addrmap,
-		KeyBond:        kb,
 		origByte:       make([]byte, 1, 1),
 	}
 
 	return emuCtrlr
 }
 
-//Init - initialize the emulator and key bindings
+//Init - initialize the emulator 
 func (cont *Controller) Init() {
 	cont.cmd.Start()
 	time.Sleep(2 * time.Second)
@@ -95,20 +86,11 @@ func (cont *Controller) Init() {
 	cont.bpAddr = uintptr(cont.bpOffset + cont.inPlugAddr)
 	setBreakpoint(pid, cont.bpAddr, cont.origByte)
 
-	kb, err := keybd_event.NewKeyBonding()
-	if err != nil {
-		panic(err)
-	}
-
-	cont.KeyBond = kb
 
 	time.Sleep(2 * time.Second)
 
-	cont.KeyBond.SetKeys(keybd_event.VK_1, keybd_event.VK_F7)
-	err = cont.KeyBond.Launching()
-	if err != nil {
-		panic(err)
-	}
+	cont.LoadGame()
+
 }
 
 //GetState - get the values in memory for all state vars
@@ -189,9 +171,10 @@ func (cont *Controller) GameStepTrain() uint64 {
 	return action
 }
 
-//LoadGame - Load the save-state
+
 func (cont *Controller) LoadGame() {
-	err := cont.KeyBond.Launching()
+	loadCmd := exec.Command("xdotool", "search", "--class", "Mupen", "key", "F7")
+	err := loadCmd.Run()
 	if err != nil {
 		panic(err)
 	}
