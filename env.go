@@ -29,7 +29,7 @@ func (env *Environment) GameStep(action uint64) {
 	env.emuCtrlr.GameStep(action)
 }
 
-//GameStepTrain - step the game a single input frame
+//GameStepTrain - step the game a single input frame accepting user input
 func (env *Environment) GameStepTrain() uint64{
 	return env.emuCtrlr.GameStepTrain()
 }
