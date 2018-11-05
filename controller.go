@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
@@ -87,7 +88,6 @@ func (cont *Controller) Init() {
 	setBreakpoint(pid, cont.bpAddr, cont.origByte)
 
 
-	time.Sleep(2 * time.Second)
 
 	cont.LoadGame()
 
@@ -173,8 +173,16 @@ func (cont *Controller) GameStepTrain() uint64 {
 
 
 func (cont *Controller) LoadGame() {
-	loadCmd := exec.Command("xdotool", "search", "--class", "Mupen", "key", "F7")
-	err := loadCmd.Run()
+	pidStr := strconv.Itoa(cont.cmd.Process.Pid)
+	getWinIdCmd := exec.Command("xdotool", "search", "--pid", pidStr)
+	var winId bytes.Buffer
+	getWinIdCmd.Stdout = &winId
+	err := getWinIdCmd.Run()
+	if err != nil {
+		panic(err)
+	}
+	loadCmd := exec.Command("xdotool", "key", "--window", winId.String() , "F7")
+	err = loadCmd.Run()
 	if err != nil {
 		panic(err)
 	}
