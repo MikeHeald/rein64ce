@@ -2,11 +2,16 @@ package main
 
 import (
 	"fmt"
+    "strconv"
 	"os"
 
-	"gonum.org/v1/gonum/mat"
 
-	"github.com/SageFocusLLC/gophernet"
+
+    "encoding/csv"
+    "log"
+    "net/http"
+    "encoding/json"
+    "bytes"
 )
 
 //has to be mupen64plus 64 bit linux, with default input plugin
@@ -17,35 +22,28 @@ func main() {
 
 	env.Init()
 
-	episodeLength := 1200 
-	episodeProgress := 0.0
+	episodeLength := 1200
+	episodeProgress := float32(0.0)
 
-	//create neural net
-	nnConfig := gonet.NeuralNetConfig{
-		InputNeurons:  6,
-		OutputNeurons: 8,
-		HiddenNeurons: 12,
-		NumEpochs:     1,
-		LearningRate:  0.05,
-	}
 
-	agent := NewAgent(nnConfig)
+	agent := NewAgent()
 
-	agent.LoadNN()
+//	agent.LoadNN()
 
-	agent.SetTau(0.3)
+	agent.SetTau(0.01)
 
-	stateArr := []float64{0.01, 0.01, 0.01, 0.01, 0.01, 0.01}
+	stateArr := []float32{0.01, 0.01, 0.01, 0.01, 0.01, 0.01}
+	var stateArray [3]float32
 	env.GetState(stateArr)
 
-	reward := 0.0
+	reward := float32(0.0)
 	epoch := 0
 	action := uint64(0x00)
 	//actionP := uint64(0x00)
 	mapPositionVec(stateArr[0:3])
 
-	stateP := mat.NewDense(1, len(stateArr), nil)
-	state := mat.NewDense(1, len(stateArr), nil)
+//	state := mat.NewDense(1, len(stateArr), nil)
+//	state := []float64
 
 	//actionMem := mat.NewDense(1000, 1, nil)
 	//rewardMem := mat.NewDense(1000, 1, nil)
@@ -58,14 +56,16 @@ func main() {
 		endstate := false
 		step := 1
 
+	        epochMem := [][]float32{}
+
 		for step < episodeLength && endstate != true {
-			episodeProgress = float64(step) / float64(episodeLength + 1)
+			episodeProgress = float32(step) / float32(episodeLength + 1)
 
 			//action
-			state.SetRow(0, stateArr)
+			//state.SetRow(0, stateArr)
 
 			//greedy
-			action = agent.GetActionGreedy(state)
+			//action = agent.GetActionGreedy(state)
 
 			//e greedy exploration
 			//action = agent.GetActionEGreedy(state)
@@ -73,13 +73,30 @@ func main() {
 			//boltzmann
 			//action = agent.GetActionBoltzmann(state)
 
+			//python
+			//action = getWebAction(stateArr)
+
+			//tf go
+			copy(stateArray[:], stateArr[:3])
+			//action = agent.Predict(stateArray)
+
+			//tf epsilon 
+			//copy(stateArray[:], stateArr[:3])
+                        action = agent.GetActionEGreedy(stateArray)
+
+			//training
 			//_ = env.GameStepTrain()
 			//actionP = env.GameStepTrain()
+			//fmt.Println(action)
+
 
 			env.GameStep(action)
 
 			//observation
 			env.GetState(stateArr)
+
+			epochMem = append(epochMem,append(stateArr,float32(action)))
+			fmt.Println(stateArr)
 
 			mapPositionVec(stateArr[0:3])
 
@@ -89,33 +106,74 @@ func main() {
 			stateArr[5] = episodeProgress
 
 			//reward
-			reward, endstate = getReward(stateArr, epoch, step)
+			//reward, endstate = getReward(stateArr, epoch, step)
 
-			stateP.SetRow(0, stateArr)
 
 			//scale reward
-			reward = reward * 0.1
+			reward = reward * 0.5
 
-			agent.GiveReward(state, stateP, reward)
-			
+//			agent.GiveReward(state, stateP, reward)
 			step += 1
 		}
 		//decrease temp
 		curTemp := agent.GetTau()
 		if curTemp > 0.002 {
-			agent.SetTau(curTemp * 0.9)
+			agent.SetTau(curTemp * 0.8)
 		}
-		
+
 		fmt.Println(agent.Q)
 		fmt.Println(curTemp)
-		agent.SaveNN()
+//		agent.SaveNN()
 
 		epoch += 1
+        fmt.Println(len(epochMem))
+        file, _ := os.Create("epochMeme.csv")
+        defer file.Close()
+        writer := csv.NewWriter(file)
+        defer writer.Flush()
+        for _, value := range epochMem {
+            strArr := []string{}
+            for _, fval := range value {
+                strArr = append(strArr, strconv.FormatFloat(float64(fval),'f', 6, 64))
+            }
+            _ = writer.Write(strArr)
+        }
+
 	}
 	fmt.Println("done :D")
 }
 
-func getReward(stateArr []float64, epoch int, step int) (float64, bool) {
+func getWebAction(stateArr []float32) uint64 {
+	message := map[string]interface{}{
+		"obs" : stateArr,
+	}
+
+	bytesRepresentation, err := json.Marshal(message)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	resp, err := http.Post("http://localhost:5000/predict", "application/json", bytes.NewBuffer(bytesRepresentation))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	var result map[string]interface{}
+
+	json.NewDecoder(resp.Body).Decode(&result)
+
+	fmt.Println(result)
+	defer resp.Body.Close()
+
+	return 32
+
+}
+
+func getWebActionMock(stateArr []float32) uint64 {
+	return 32
+}
+
+func getReward(stateArr []float32, epoch int, step int) (float32, bool) {
 	reward := 0.0
 	endstate := false
 /*
@@ -165,18 +223,19 @@ func getReward(stateArr []float64, epoch int, step int) (float64, bool) {
 	//reward = reward * 0.3 - 0.2
 
 	//slight reward for moving down
-	reward += 0.05 * (1.0 - stateArr[1])
+	reward += 0.05 * (1.0 - float64(stateArr[1]))
 
-	return reward, endstate
+	return float32(reward), endstate
 
 }
 
-func mapPositionVec(fArr []float64) {
+func mapPositionVec(fArr []float32) {
 	for i, v := range fArr {
 		fArr[i] = mapPositionVal(v)
 	}
 }
 
-func mapPositionVal(x float64) float64 {
-	return (x / 20000.0) + 0.5
+//normalize - max value is 10000, min -10000 (maybe not true for all levels)
+func mapPositionVal(x float32) float32 {
+	return -1.0 + (x - -10000.0) * (1.0 - -1.0) / (10000.0 - -10000.0)
 }

@@ -22,6 +22,7 @@ import (
 type Controller struct {
 	cmd            *exec.Cmd
 	inPlugAddr     uint64
+	libmupenAddr   uint64
 	bpOffset       uint64
 	bpAddr         uintptr
 	stateAddrSlice []string
@@ -69,6 +70,7 @@ func NewController(cmdArr []string, mapPath string) *Controller {
 	emuCtrlr := &Controller{
 		cmd:            exec.Command(cmdArr[0], cmdArr[1:]...),
 		inPlugAddr:     uint64(0x00),
+		libmupenAddr:   uint64(0x00),
 		bpOffset:       uint64(0x35cd),
 		bpAddr:         uintptr(0x00),
 		stateAddrSlice: addrslice,
@@ -89,6 +91,7 @@ func (cont *Controller) Init() {
 	sysWait(pid)
 
 	cont.inPlugAddr = getInputAddr(pid)
+	cont.libmupenAddr = getLibmupenAddr(pid)
 	cont.bpAddr = uintptr(cont.bpOffset + cont.inPlugAddr)
 	setBreakpoint(pid, cont.bpAddr, cont.origByte)
 
@@ -109,23 +112,23 @@ func (cont *Controller) Init() {
 }
 
 //GetState - get the values in memory for all state vars
-func (cont *Controller) GetState(state []float64) {
+func (cont *Controller) GetState(state []float32) {
 	for i, v := range cont.stateAddrSlice {
 		state[i] = cont.ReadStateVal(cont.cmd.Process.Pid, cont.StateAddrMap[v])
 	}
 }
 
 //ReadStateVal - read the memory for a given state var
-func (cont *Controller) ReadStateVal(pid int, v StateValue) float64 {
+func (cont *Controller) ReadStateVal(pid int, v StateValue) float32 {
 	addrSlice, err := hex.DecodeString(v.Addr[2:])
-	addr := uint64(binary.BigEndian.Uint32(addrSlice)) + cont.inPlugAddr
+	addr := uint64(binary.BigEndian.Uint32(addrSlice)) + cont.libmupenAddr
 	if err != nil {
 		panic(err)
 	}
 	if v.Type == "float32" {
-		return float64(peekFloat32(pid, uintptr(addr)))
+		return float32(peekFloat32(pid, uintptr(addr)))
 	} else if v.Type == "uint16" {
-		return float64(peekuInt16(pid, uintptr(addr)))
+		return float32(peekuInt16(pid, uintptr(addr)))
 	}
 	return 0.0
 }
@@ -223,6 +226,26 @@ func getInputAddr(pid int) uint64 {
 		}
 	}
 	return uint64(0)
+}
+
+func getLibmupenAddr(pid int) uint64 {
+        f, err := os.Open(fmt.Sprintf("/proc/%d/maps", pid))
+        if err != nil {
+                panic(err)
+        }
+
+        scanner := bufio.NewScanner(f)
+        for scanner.Scan() {
+                if strings.Contains(scanner.Text(), "libmupen") {
+                        strInLine := strings.Split(scanner.Text(), "-")
+                        addr, err := strconv.ParseInt(strInLine[0], 16, 64)
+                        if err != nil {
+                                panic (err)
+                        }
+                        return uint64(addr)
+                }
+        }
+        return uint64(0)
 }
 
 func pStep(pid int) {

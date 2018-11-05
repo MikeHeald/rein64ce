@@ -20,7 +20,7 @@ func (env *Environment) Init() {
 }
 
 //GetState - get game state
-func (env *Environment) GetState(state []float64) {
+func (env *Environment) GetState(state []float32) {
 	env.emuCtrlr.GetState(state)
 }
 
