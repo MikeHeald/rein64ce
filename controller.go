@@ -79,6 +79,9 @@ func (cont *Controller) Init() {
 	cont.cmd.Start()
 	time.Sleep(2 * time.Second)
 	pid := cont.cmd.Process.Pid
+
+	syscall.PtraceSetOptions(pid, syscall.PTRACE_O_TRACECLONE)
+
 	pAttach(pid)
 	sysWait(pid)
 
@@ -173,6 +176,7 @@ func (cont *Controller) GameStepTrain() uint64 {
 
 
 func (cont *Controller) LoadGame() {
+
 	pidStr := strconv.Itoa(cont.cmd.Process.Pid)
 	getWinIdCmd := exec.Command("xdotool", "search", "--pid", pidStr)
 	var winId bytes.Buffer
@@ -295,8 +299,36 @@ func pDetach(pid int) {
 	}
 }
 
+func (cont *Controller) Disconnect() {
+	//run one frame
+        pCont(cont.cmd.Process.Pid)
+
+        //wait for breakpoint
+        sysWait(cont.cmd.Process.Pid)
+
+        //replace int3 instruction with mov
+        clearBreakpoint(cont.cmd.Process.Pid, cont.bpAddr, cont.origByte)
+
+	//reset pc
+        pSetPC(cont.cmd.Process.Pid, uint64(cont.bpAddr))
+
+//	pCont(cont.cmd.Process.Pid)
+
+	pDetach(cont.cmd.Process.Pid)
+	fmt.Println("DETACH")
+}
+
+func (cont *Controller) Reconnect() {
+	pid := cont.cmd.Process.Pid
+	pAttach(cont.cmd.Process.Pid)
+	sysWait(cont.cmd.Process.Pid)
+	fmt.Println("ATATAA")
+        setBreakpoint(pid, cont.bpAddr, cont.origByte)
+
+}
+
 func sysWait(pid int) {
-	_, err := syscall.Wait4(-1, nil, syscall.WALL, nil)
+	_, err := syscall.Wait4(pid, nil, syscall.WSTOPPED, nil)
 	if err != nil {
 		panic(err)
 	}

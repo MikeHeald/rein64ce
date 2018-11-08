@@ -38,3 +38,14 @@ func (env *Environment) GameStepTrain() uint64{
 func (env *Environment) LoadGame() {
 	env.emuCtrlr.LoadGame()
 }
+
+//Disconnect controller
+func (env *Environment) Disconnect() {
+	env.emuCtrlr.Disconnect()
+}
+
+//Reconnect controller
+func (env *Environment) Reconnect() {
+        env.emuCtrlr.Reconnect()
+}
+

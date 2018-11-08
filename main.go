@@ -30,10 +30,12 @@ func main() {
 	epoch := 0
 	action := uint64(0x00)
 
+	env.LoadGame()
+
 	for epoch < 100 {
 		fmt.Println("Epoch ", epoch)
 
-		env.LoadGame()
+//		env.LoadGame()
 
 		endstate := false
 		step := 1
@@ -43,15 +45,6 @@ func main() {
 		for step < episodeLength && endstate != true {
 			episodeProgress = float32(step)
 
-			//greedy
-			//action = agent.GetActionGreedy(state)
-
-			//e greedy exploration
-			//action = agent.GetActionEGreedy(state)
-
-			//boltzmann
-			//action = agent.GetActionBoltzmann(state)
-
 			//tf go
 			copy(stateArray[:], stateArr[:3])
 			//action = agent.Predict(stateArray)
@@ -60,10 +53,9 @@ func main() {
 			//copy(stateArray[:], stateArr[:3])
                         action = agent.GetActionEGreedy(stateArray)
 
-			//training
+			//supervised training
 			//_ = env.GameStepTrain()
 			//actionP = env.GameStepTrain()
-			//fmt.Println(action)
 
 
 			env.GameStep(action)
@@ -72,7 +64,7 @@ func main() {
 			env.GetState(stateArr)
 
 			epochMem = append(epochMem,append(stateArr,float32(action)))
-			fmt.Println(stateArr)
+			//fmt.Println(stateArr)
 
 
 			stateArr[5] = episodeProgress
@@ -80,18 +72,18 @@ func main() {
 
 			step += 1
 		}
-		//decrease temp
-		curTemp := agent.GetTau()
-		if curTemp > 0.002 {
-			agent.SetTau(curTemp * 0.8)
-		}
 
-		fmt.Println(agent.Q)
-		fmt.Println(curTemp)
+		//detach
+		env.Disconnect()
+
+		//decrease temp
+//		curTemp := agent.GetTau()
+//		if curTemp > 0.002 {
+//			agent.SetTau(curTemp * 0.8)
+//		}
 
 		epoch += 1
 
-	        fmt.Println(len(epochMem))
 	        file, _ := os.Create("epochMeme.csv")
 	        defer file.Close()
 	        writer := csv.NewWriter(file)
@@ -103,6 +95,10 @@ func main() {
 	            }
 	            _ = writer.Write(strArr)
 	        }
+
+		env.LoadGame()
+
+		env.Reconnect()
 
 	}
 	fmt.Println("done :D")
