@@ -5,23 +5,23 @@ import (
 	"strconv"
 	"os"
 	"encoding/csv"
+	"io/ioutil"
 )
 
 //has to be mupen64plus 64 bit linux, with default input plugin
 func main() {
 	args := os.Args[1:]
 	mapPath := "./statemap.json"
+	agent := NewAgent()
 	env := NewEnvironment(args, mapPath)
 
 	env.Init()
 
-	episodeLength := 1200
+	episodeLength := 900
 	episodeProgress := float32(0.0)
 
 
-	agent := NewAgent()
-
-	agent.SetTau(0.01)
+	agent.SetTau(1.00)
 
 	stateArr := []float32{0.01, 0.01, 0.01, 0.01, 0.01, 0.01}
 	var stateArray [3]float32
@@ -30,12 +30,9 @@ func main() {
 	epoch := 0
 	action := uint64(0x00)
 
-	env.LoadGame()
 
 	for epoch < 100 {
 		fmt.Println("Epoch ", epoch)
-
-//		env.LoadGame()
 
 		endstate := false
 		step := 1
@@ -43,6 +40,7 @@ func main() {
 	        epochMem := [][]float32{}
 
 		for step < episodeLength && endstate != true {
+//			fmt.Println(step)
 			episodeProgress = float32(step)
 
 			//tf go
@@ -84,7 +82,12 @@ func main() {
 
 		epoch += 1
 
-	        file, _ := os.Create("epochMeme.csv")
+		memFiles, err := ioutil.ReadDir("./memz")
+		if err != nil{
+			panic(err)
+		}
+
+	        file, _ := os.Create(fmt.Sprintf("memz/epochMeme%d.csv",len(memFiles)))
 	        defer file.Close()
 	        writer := csv.NewWriter(file)
 	        defer writer.Flush()
