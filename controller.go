@@ -78,6 +78,8 @@ func NewController(cmdArr []string, mapPath string) *Controller {
 func (cont *Controller) Init() {
 	cont.cmd.Start()
 	time.Sleep(2 * time.Second)
+	cont.LoadGame()
+	time.Sleep(1 * time.Second)
 	pid := cont.cmd.Process.Pid
 
 	syscall.PtraceSetOptions(pid, syscall.PTRACE_O_TRACECLONE)
@@ -92,7 +94,6 @@ func (cont *Controller) Init() {
 
 
 
-	cont.LoadGame()
 
 }
 
@@ -190,6 +191,7 @@ func (cont *Controller) LoadGame() {
 	if err != nil {
 		panic(err)
 	}
+
 }
 
 func setBreakpoint(pid int, breakpoint uintptr, original []byte) {
@@ -312,18 +314,14 @@ func (cont *Controller) Disconnect() {
 	//reset pc
         pSetPC(cont.cmd.Process.Pid, uint64(cont.bpAddr))
 
-//	pCont(cont.cmd.Process.Pid)
 
 	pDetach(cont.cmd.Process.Pid)
-	fmt.Println("DETACH")
 }
 
 func (cont *Controller) Reconnect() {
-	pid := cont.cmd.Process.Pid
 	pAttach(cont.cmd.Process.Pid)
 	sysWait(cont.cmd.Process.Pid)
-	fmt.Println("ATATAA")
-        setBreakpoint(pid, cont.bpAddr, cont.origByte)
+        setBreakpoint(cont.cmd.Process.Pid, cont.bpAddr, cont.origByte)
 
 }
 
