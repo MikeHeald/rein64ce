@@ -1,25 +1,25 @@
 [{
 	"name": "mario_x",
-	"address": "0x0b6f1aac",
+	"address": "0x00df208c",
 	"type": "float32"
 },
 {
 	"name": "mario_y",
-	"address": "0x0b6f1ab0",
+	"address": "0x00df2090",
 	"type": "float32"
 },
 {
 	"name": "mario_z",
-	"address": "0x0b6f1ab4",
+	"address": "0x00df2094",
 	"type": "float32"
 },
 {
-    "name": "mario_dir",
-    "address": "0x0b6f1a9c",
-    "type": "uint16"
+        "name": "mario_dir",
+        "address": "0x00df209c",
+        "type": "float32"
 },
 {
 	"name": "mario_coins",
-	"address": "0x0b6f1b1a",
+	"address": "0x00df20fa",
 	"type": "uint16"
 }]
