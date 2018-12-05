@@ -9,7 +9,6 @@ Usage:
 ./rein64ce /usr/games/mupen64plus /path/to/rom
 
 
-
 TODO:
 
 feature - marshal agent and NN to json for saving/sharing
