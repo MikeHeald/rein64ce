@@ -4,19 +4,29 @@
 	"type": "float32"
 },
 {
-	"name": "mario_y",
+	"name": "mario_z",
 	"address": "0x00df2090",
 	"type": "float32"
 },
 {
-	"name": "mario_z",
+	"name": "mario_y",
 	"address": "0x00df2094",
 	"type": "float32"
 },
 {
-        "name": "mario_dir",
+	"name": "mario_x_vel",
+	"address": "0x00df2098",
+	"type": "float32"
+},
+{
+        "name": "mario_z_vel",
         "address": "0x00df209c",
         "type": "float32"
+},
+{
+	"name": "mario_y_vel",
+	"address": "0x00df20a0",
+	"type": "float32"
 },
 {
 	"name": "mario_coins",
