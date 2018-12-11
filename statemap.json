@@ -1,4 +1,10 @@
-[{
+[
+{
+	"name": "mario_horiz_rot",
+	"address": "0x00df208a",
+	"type": "uint16"
+},
+{
 	"name": "mario_x",
 	"address": "0x00df208c",
 	"type": "float32"
