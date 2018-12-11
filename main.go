@@ -13,7 +13,7 @@ func main() {
 	args := os.Args[1:]
 
 	agent := NewAgent()
-	agent.SetEpsilon(0.99)
+	agent.SetEpsilon(1.00)
 
 	mapPath := "./statemap.json"
 	env := NewEnvironment(args, mapPath)
@@ -22,7 +22,7 @@ func main() {
 	episodeLength := 900
 	episodeProgress := float32(0.0)
 
-	stateArr := []float32{0.01, 0.01, 0.01, 0.01, 0.01, 0.01}
+	stateArr := []float32{0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01}
 	var stateArray [3]float32
 	env.GetState(stateArr)
 
