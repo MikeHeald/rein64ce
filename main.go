@@ -11,17 +11,16 @@ import (
 //has to be mupen64plus 64 bit linux, with default input plugin
 func main() {
 	args := os.Args[1:]
-	mapPath := "./statemap.json"
-	agent := NewAgent()
-	env := NewEnvironment(args, mapPath)
 
+	agent := NewAgent()
+	agent.SetEpsilon(0.99)
+
+	mapPath := "./statemap.json"
+	env := NewEnvironment(args, mapPath)
 	env.Init()
 
 	episodeLength := 900
 	episodeProgress := float32(0.0)
-
-
-	agent.SetEpsilon(0.01)
 
 	stateArr := []float32{0.01, 0.01, 0.01, 0.01, 0.01, 0.01}
 	var stateArray [3]float32
@@ -29,7 +28,6 @@ func main() {
 
 	epoch := 0
 	action := uint64(0x00)
-
 
 	for epoch < 100 {
 		fmt.Println("Epoch ", epoch)
@@ -44,8 +42,9 @@ func main() {
 
 			copy(stateArray[:], stateArr[:3])
 
-//                        action = agent.GetActionEGreedy(stateArray)
-			action = agent.Predict(stateArray)
+                        action = agent.GetActionEGreedy(stateArray)
+
+			//action = agent.Predict(stateArray)
 
 			//supervised training
 			//_ = env.GameStepTrain()
@@ -61,13 +60,10 @@ func main() {
 
 			stateArr[5] = episodeProgress
 
-
 			step += 1
 		}
 
-		//detach
 		env.Disconnect()
-
 
 		epoch += 1
 
@@ -91,8 +87,10 @@ func main() {
 		env.LoadGame()
 
 		env.Reconnect()
-
 	}
+
+	env.Disconnect()
+
 	fmt.Println("done :D")
 }
 
