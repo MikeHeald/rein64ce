@@ -13,7 +13,7 @@ type Agent struct {
 	maxQ        float64
 	maxQInd     int
 	Q           []float64
-	tau         float64
+	epsilon     float64
 }
 
 //NewAgent - Agent constructor
@@ -40,7 +40,7 @@ func NewAgent() *Agent {
 		Q:           make([]float64, len(aspace)),
 		maxQ:        0.0,
 		maxQInd:     0,
-		tau:         0.0,
+		epsilon:     0.0,
 	}
 
 	return agent
@@ -59,19 +59,19 @@ func getMaxFloat(fArr []float32) (int, float32) {
 	return curMaxInd, curMax
 }
 
-func (agent *Agent) GetTau() float64 {
-	return agent.tau
+func (agent *Agent) GetEpsilon() float64 {
+	return agent.epsilon
 }
 
-func (agent *Agent) SetTau(tau float64) {
-	agent.tau = tau
+func (agent *Agent) SetEpsilon(epsilon float64) {
+	agent.epsilon = epsilon
 }
 
 
 //adding tensorflow
 func (agent *Agent) GetActionEGreedy(state [3]float32) uint64 {
         eVal := rand.Float64()
-        if eVal < agent.tau {
+        if eVal < agent.epsilon {
                 return agent.GetRandAction()
         } else {
                 return agent.Predict(state)

@@ -21,7 +21,7 @@ func main() {
 	episodeProgress := float32(0.0)
 
 
-	agent.SetTau(1.00)
+	agent.SetEpsilon(0.01)
 
 	stateArr := []float32{0.01, 0.01, 0.01, 0.01, 0.01, 0.01}
 	var stateArray [3]float32
@@ -40,21 +40,16 @@ func main() {
 	        epochMem := [][]float32{}
 
 		for step < episodeLength && endstate != true {
-//			fmt.Println(step)
 			episodeProgress = float32(step)
 
-			//tf go
 			copy(stateArray[:], stateArr[:3])
-			//action = agent.Predict(stateArray)
 
-			//tf epsilon 
-			//copy(stateArray[:], stateArr[:3])
-                        action = agent.GetActionEGreedy(stateArray)
+//                        action = agent.GetActionEGreedy(stateArray)
+			action = agent.Predict(stateArray)
 
 			//supervised training
 			//_ = env.GameStepTrain()
 			//actionP = env.GameStepTrain()
-
 
 			env.GameStep(action)
 
@@ -63,7 +58,6 @@ func main() {
 
 			epochMem = append(epochMem,append(stateArr,float32(action)))
 			//fmt.Println(stateArr)
-
 
 			stateArr[5] = episodeProgress
 
@@ -74,11 +68,6 @@ func main() {
 		//detach
 		env.Disconnect()
 
-		//decrease temp
-//		curTemp := agent.GetTau()
-//		if curTemp > 0.002 {
-//			agent.SetTau(curTemp * 0.8)
-//		}
 
 		epoch += 1
 
