@@ -10,9 +10,6 @@ import (
 type Agent struct {
 	ActionSpace []uint64
 	nn          *tf.SavedModel
-	maxQ        float64
-	maxQInd     int
-	Q           []float64
 	epsilon     float64
 }
 
@@ -37,9 +34,6 @@ func NewAgent() *Agent {
 	agent := &Agent{
 		ActionSpace: aspace,
 		nn:          model,
-		Q:           make([]float64, len(aspace)),
-		maxQ:        0.0,
-		maxQInd:     0,
 		epsilon:     0.0,
 	}
 
