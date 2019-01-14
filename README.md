@@ -11,11 +11,9 @@ Usage:
 
 TODO:
 
-feature - marshal agent and NN to json for saving/sharing
+feature - marshal agent setting and NN weights to json for saving/sharing
 
-feature - record states/actions
-
-feature - experience playback training
+feature - record states/actions - done
 
 feature - exploit/exploration options -- done -- added epsilon-greedy and boltzmann
 
@@ -25,9 +23,5 @@ feature - python tensorflow nn - done
 
 bug - ptrace eventually hangs (deadlock?)
 
-feature - python tensorflow nn
-
-bug - ptrace eventually hangs (deadlock?)
-
-feature - load saved states without simulating key presses
+feature - load saved states without simulating key presses - done
 
